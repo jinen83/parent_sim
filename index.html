@@ -2,7 +2,8 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Iframe Crash Simulation (Responsive + Murphy's Law)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iframe Crash Simulation (Two Column)</title>
 <style>
     body {
         font-family: sans-serif;
@@ -131,30 +132,48 @@
 </head>
 <body>
 
-<div class="browser-window">
-  <div class="title-bar">
-      <div class="buttons">
-          <span class="dot red"></span>
-          <span class="dot yellow"></span>
-          <span class="dot green"></span>
-      </div>
-      <span class="tab-title">Admin Dashboard</span>
-  </div>
-  <iframe id="targetIframe" src="admin_panel.html" title="Admin Dashboard Content"></iframe>
+<div class="main-container">
 
-  <div id="crashOverlay">
-      <div class="sad-icon">:(</div>
-      <div>The 'Admin Dashboard' tab has crashed.</div>
-      <div style="font-size: 0.7em; margin-top: 10px;">(This is a simulation)</div>
-  </div>
+    <div class="column column-1">
+        <div class="browser-window">
+            <div class="title-bar">
+                <div class="buttons">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                </div>
+                <span class="tab-title">Admin Dashboard</span>
+            </div>
+            <iframe id="targetIframe" src="admin_panel.html" title="Admin Dashboard Content"></iframe>
+
+            <div id="crashOverlay">
+                <div class="sad-icon">:(</div>
+                <div>The 'Admin Dashboard' tab has crashed.</div>
+                <div style="font-size: 0.7em; margin-top: 10px;">(This is a simulation)</div>
+                <div class="murphy-in-overlay">Murphy's Law: If anything can go wrong, it will.</div>
+            </div>
+        </div>
+
+        <div class="col1-controls">
+            <button id="simulateCrashBtnParent">Simulate Crash (Parent Button)</button>
+            <button id="resetBtn">Reset Iframe</button>
+        </div>
+    </div>
+
+    <div class="column column-2" id="crashReasonsCol">
+        <h2>Possible Crash Reasons</h2>
+        <ul>
+            <li><strong>Script Timeout:</strong> An operation took too long (e.g., infinite loop).</li>
+            <li><strong>Memory Exhaustion:</strong> The page used too much memory allocation.</li>
+            <li><strong>Rendering Issue:</strong> Complex CSS or canvas operations failed.</li>
+            <li><strong>Network Error:</strong> Failed to load critical resources.</li>
+            <li><strong>Browser Bug:</strong> An underlying issue in the browser itself.</li>
+            <li><strong>Resource Limit:</strong> Exceeded limits set by the browser or OS.</li>
+        </ul>
+        <p style="font-size: 0.8em; margin-top: 15px; color: #777;">(These are common examples, the actual cause may vary)</p>
+    </div>
+
 </div>
-
-<div class="controls-main">
-    <button id="simulateCrashBtnParent" hidden>Simulate Crash (Parent Button)</button>
-    <button id="resetBtn">Reset Iframe</button>
-</div>
-
-<p id="murphyText">Murphy's Law: If anything can go wrong, it will.</p>
 
 
 <script>
@@ -162,26 +181,26 @@
   const simulateBtnParent = document.getElementById('simulateCrashBtnParent');
   const resetBtn = document.getElementById('resetBtn');
   const iframe = document.getElementById('targetIframe');
-  const murphyText = document.getElementById('murphyText'); // Get the Murphy's Law element
+  const crashReasonsCol = document.getElementById('crashReasonsCol'); // Get Column 2 element
 
-  // Function to show the overlay AND Murphy's Law text
-  function showCrashOverlay() {
+  // Function to show the overlay AND Crash Reasons column
+  function showCrashSimulation() {
       overlay.classList.add('visible');
-      murphyText.classList.add('visible'); // Show Murphy's Law text
-      console.log('PARENT: Crash overlay activated.');
+      crashReasonsCol.style.display = 'block'; // Show Column 2
+      console.log('PARENT: Crash simulation activated.');
   }
 
-  // Function to hide the overlay AND Murphy's Law text, and reset iframe
+  // Function to hide the overlay AND Crash Reasons column, and reset iframe
   function resetSimulation() {
       overlay.classList.remove('visible');
-      murphyText.classList.remove('visible'); // Hide Murphy's Law text
+      crashReasonsCol.style.display = 'none'; // Hide Column 2
       // Force iframe reload to truly reset its state
       iframe.src = iframe.src; // Reloads admin_panel.html
-      console.log('PARENT: Iframe reset and reloaded.');
+      console.log('PARENT: Simulation reset and iframe reloaded.');
   }
 
   // Listener for the PARENT's simulate button
-  simulateBtnParent.addEventListener('click', showCrashOverlay);
+  simulateBtnParent.addEventListener('click', showCrashSimulation);
 
   // Listener for the reset button
   resetBtn.addEventListener('click', resetSimulation);
@@ -189,11 +208,9 @@
   // Listener for messages from the iframe (to trigger the crash simulation)
   window.addEventListener('message', (event) => {
     // SECURITY NOTE: Check event.origin in production!
-    // Example: if (event.origin !== 'http://your-iframe-domain.com') return;
-
     if (event.data === 'simulateCrashRequest') {
       console.log('PARENT: Received "simulateCrashRequest" message from iframe.');
-      showCrashOverlay(); // Activate the overlay and Murphy's text
+      showCrashSimulation(); // Activate the simulation
     }
   });
 </script>
