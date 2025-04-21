@@ -1,112 +1,217 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Iframe Crash Simulation (Enhanced + postMessage)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iframe Crash Simulation (Categorized Reasons)</title>
 <style>
-    /* Styles remain the same as the previous parent version */
+    /* --- Base Styles (Mostly Unchanged) --- */
     body {
-        font-family: sans-serif;
-        padding: 20px;
-        background-color: #e0e0e0;
+        font-family: sans-serif; padding: 15px; background-color: #f0f0f0;
+        margin: 0; color: #333;
     }
+    .main-container {
+        display: flex; flex-wrap: wrap; gap: 25px; max-width: 1300px;
+        margin: 0 auto; align-items: flex-start;
+    }
+    .column {
+        background-color: #fff; padding: 20px; border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex-shrink: 1;
+        flex-basis: 0; box-sizing: border-box; min-width: 280px;
+    }
+    .column-1 { flex-grow: 2; min-width: 320px; }
+    .column-2 { flex-grow: 1; display: none; } /* Initially hidden */
+
+    /* --- Column 1 Styles (Unchanged) --- */
     .browser-window {
-        position: relative;
-        width: 800px;
-        height: 550px;
-        border: 1px solid #aaa;
-        background-color: #fff;
-        margin-bottom: 15px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        border-radius: 8px;
-        overflow: hidden;
+        position: relative; width: 100%; height: 500px; border: 1px solid #aaa;
+        background-color: #fff; margin: 0 0 15px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        border-radius: 8px; overflow: hidden;
     }
-    .title-bar {
-        background-color: #ddd;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        padding: 0 10px;
-        border-bottom: 1px solid #ccc;
+    .title-bar { /* ... */
+        background-color: #ddd; height: 30px; display: flex; align-items: center;
+        padding: 0 10px; border-bottom: 1px solid #ccc; flex-shrink: 0;
     }
     .buttons { display: flex; gap: 6px; margin-right: 10px; }
-    .dot { width: 12px; height: 12px; border-radius: 50%; }
-    .red { background-color: #ff5f57; }
-    .yellow { background-color: #ffbd2e; }
-    .green { background-color: #28c940; }
-    .tab-title { font-size: 0.8em; color: #333; background-color: #eee; padding: 4px 10px; border-radius: 4px 4px 0 0; position: relative; top: 1px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .red { background-color: #ff5f57; } .yellow { background-color: #ffbd2e; } .green { background-color: #28c940; }
+    .tab-title { /* ... */
+        font-size: 0.8em; color: #333; background-color: #eee; padding: 4px 10px;
+        border-radius: 4px 4px 0 0; position: relative; top: 1px; white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis;
+    }
     #targetIframe { width: 100%; height: calc(100% - 30px); border: none; display: block; }
-    #crashOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(50, 50, 50, 0.9); color: #eee; justify-content: center; align-items: center; text-align: center; font-size: 1.5em; display: flex; flex-direction: column; visibility: hidden; opacity: 0; transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; z-index: 10; border-radius: 8px; }
+    #crashOverlay { /* ... */
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(50, 50, 50, 0.9); color: #eee;
+        justify-content: center; align-items: center; text-align: center;
+        font-size: 1.5em; display: flex; flex-direction: column;
+        visibility: hidden; opacity: 0;
+        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        z-index: 10; border-radius: 8px; padding: 20px; box-sizing: border-box;
+    }
     #crashOverlay.visible { visibility: visible; opacity: 1; }
     .sad-icon { font-size: 3em; margin-bottom: 15px; color: #ffcc00; }
-    .controls-main { margin-top: 10px; }
-    .controls-main button { padding: 10px 15px; font-size: 1em; cursor: pointer; margin-right: 10px; }
+    .murphy-in-overlay { font-size: 0.6em; margin-top: 20px; font-style: italic; color: #ccc; }
+    .col1-controls { text-align: center; }
+    .col1-controls button { padding: 10px 15px; font-size: 1em; cursor: pointer; margin: 5px; }
+
+    /* --- Column 2 Styles (UPDATED) --- */
+    #crashReasonsCol h2 {
+        margin-top: 0; color: #555; /* Less alarming color */
+        border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.3em;
+    }
+    #crashReasonsCol h4 { /* Style for subheadings */
+        margin-top: 20px;
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 1em;
+        border-bottom: 1px dashed #eee; /* Separator */
+        padding-bottom: 5px;
+    }
+     #crashReasonsCol h4:first-of-type {
+         margin-top: 10px; /* Less margin for the first one */
+     }
+    #crashReasonsCol ul {
+        list-style: none; padding: 0; margin: 0 0 15px 0; /* Add bottom margin */
+    }
+    #crashReasonsCol li {
+        background-color: #fcfcfc; /* Slightly off-white */
+        border: 1px solid #eee;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        display: flex; /* Use flexbox to align tag */
+        justify-content: space-between; /* Push tag to the right */
+        align-items: center;
+    }
+    /* Tag Styling */
+    .tag {
+        font-size: 0.75em;
+        padding: 2px 6px;
+        border-radius: 10px; /* Pill shape */
+        margin-left: 10px; /* Space from text */
+        font-weight: bold;
+        white-space: nowrap;
+        flex-shrink: 0; /* Prevent tag from shrinking */
+    }
+    .dev-tag {
+        background-color: #ffebee; /* Light red background */
+        color: #c62828; /* Darker red text */
+        border: 1px solid #ef9a9a;
+    }
+    .other-tag {
+        background-color: #e3f2fd; /* Light blue background */
+        color: #1565c0; /* Darker blue text */
+        border: 1px solid #90caf9;
+    }
+    /* Caution Note Styling */
+    .caution-note {
+        font-size: 0.85em;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+        color: #666;
+        line-height: 1.5;
+        font-style: italic;
+    }
+
+    /* Responsive adjustments (Unchanged) */
+    @media (max-width: 625px) {
+        .browser-window { height: 450px; }
+    }
+    @media (max-width: 400px) {
+        .browser-window { height: 400px; }
+        #crashOverlay { font-size: 1.2em; }
+        .col1-controls button { font-size: 0.9em; }
+    }
+
 </style>
 </head>
 <body>
 
-<h1>Simulating Iframe Crash Appearance (Triggered via iframe's postMessage)</h1>
+<div class="main-container">
 
-<div class="browser-window">
-  <div class="title-bar">
-      <div class="buttons">
-          <span class="dot red"></span>
-          <span class="dot yellow"></span>
-          <span class="dot green"></span>
-      </div>
-      <span class="tab-title">Admin Dashboard</span>
-  </div>
-  <iframe id="targetIframe" src="admin_panel.html" title="Admin Dashboard Content"></iframe>
+    <div class="column column-1">
+        <div class="browser-window">
+            <div class="title-bar">
+                <div class="buttons">
+                    <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                </div>
+                <span class="tab-title">Admin Dashboard</span>
+            </div>
+            <iframe id="targetIframe" src="admin_panel1.html" title="Admin Dashboard Content"></iframe>
+            <div id="crashOverlay">
+                <div class="sad-icon">:(</div>
+                <div>The 'Admin Dashboard' tab has crashed.</div>
+                <div style="font-size: 0.7em; margin-top: 10px;">(This is a simulation)</div>
+                <div class="murphy-in-overlay">Murphy's Law: If anything can go wrong, it will.</div>
+            </div>
+        </div>
+        <div class="col1-controls">
+            <button id="simulateCrashBtnParent">Simulate Crash (Parent Button)</button>
+            <button id="resetBtn">Reset Iframe</button>
+        </div>
+    </div>
 
-  <div id="crashOverlay">
-      <div class="sad-icon">:(</div>
-      <div>The 'Admin Dashboard' tab has crashed.</div>
-      <div style="font-size: 0.7em; margin-top: 10px;">(This is a simulation)</div>
-  </div>
-</div>
+    <div class="column column-2" id="crashReasonsCol">
+        <h2>Possible Crash Reasons</h2>
 
-<div class="controls-main">
-    <button id="simulateCrashBtnParent">Simulate Crash (Parent Button)</button>
-    <button id="resetBtn">Reset Iframe</button>
+        <h4>Developer Related Issues:</h4>
+        <ul>
+            <li>Infinite loop in a component (e.g., table grid rendering). <span class="tag dev-tag">Dev</span></li>
+            <li>Memory exhaustion (e.g., loading excessive data without pagination). <span class="tag dev-tag">Dev</span></li>
+            <li>Rendering issues from complex CSS/JS or canvas operations. <span class="tag dev-tag">Dev</span></li>
+            <li>Unhandled errors or exceptions in application code. <span class="tag dev-tag">Dev</span></li>
+        </ul>
+
+        <h4>Other Potential Causes:</h4>
+        <ul>
+            <li>Browser-specific bug or incompatibility. <span class="tag other-tag">Other</span></li>
+            <li>Network error disrupting resource loading or API calls. <span class="tag other-tag">Other</span></li>
+            <li>Resource limits imposed by the browser or operating system. <span class="tag other-tag">Other</span></li>
+            <li>Issues with browser extensions interfering with the page. <span class="tag other-tag">Other</span></li>
+        </ul>
+
+        <p class="caution-note">
+            Note: Developer-related issues like memory leaks or infinite loops can be more common in internal tools or features developed rapidly, sometimes by junior developers or backend developers less familiar with frontend performance patterns. Robust code reviews and performance testing are crucial.
+        </p>
+    </div>
+
 </div>
 
 <script>
-  const overlay = document.getElementById('crashOverlay');
-  const simulateBtnParent = document.getElementById('simulateCrashBtnParent'); // Renamed for clarity
-  const resetBtn = document.getElementById('resetBtn');
-  const iframe = document.getElementById('targetIframe');
+    // JavaScript remains the same as the previous version
+    const overlay = document.getElementById('crashOverlay');
+    const simulateBtnParent = document.getElementById('simulateCrashBtnParent');
+    const resetBtn = document.getElementById('resetBtn');
+    const iframe = document.getElementById('targetIframe');
+    const crashReasonsCol = document.getElementById('crashReasonsCol');
 
-  // Function to show the overlay
-  function showCrashOverlay() {
-      overlay.classList.add('visible');
-      console.log('PARENT: Crash overlay activated.');
-  }
-
-  // Function to hide the overlay and reset iframe
-  function resetSimulation() {
-      overlay.classList.remove('visible');
-      // Force iframe reload to truly reset its state
-      iframe.src = iframe.src; // Reloads admin_panel.html
-      console.log('PARENT: Iframe reset and reloaded.');
-  }
-
-  // Listener for the PARENT's simulate button
-  simulateBtnParent.addEventListener('click', showCrashOverlay);
-
-  // Listener for the reset button
-  resetBtn.addEventListener('click', resetSimulation);
-
-  // --- Listener for messages from the iframe ---
-  window.addEventListener('message', (event) => {
-    // IMPORTANT SECURITY: In production, always check event.origin
-    // Example: if (event.origin !== 'http://your-iframe-domain.com') return;
-    // For local file:// demo, this check is often skipped, but be aware.
-
-    // Check if the message is the one we expect from the iframe
-    if (event.data === 'simulateCrashRequest') {
-      console.log('PARENT: Received "simulateCrashRequest" message from iframe.');
-      showCrashOverlay(); // Activate the overlay
+    function showCrashSimulation() {
+        overlay.classList.add('visible');
+        crashReasonsCol.style.display = 'block';
+        console.log('PARENT: Crash simulation activated.');
     }
-  });
+
+    function resetSimulation() {
+        overlay.classList.remove('visible');
+        crashReasonsCol.style.display = 'none';
+        iframe.src = iframe.src;
+        console.log('PARENT: Simulation reset and iframe reloaded.');
+    }
+
+    simulateBtnParent.addEventListener('click', showCrashSimulation);
+    resetBtn.addEventListener('click', resetSimulation);
+
+    window.addEventListener('message', (event) => {
+        // SECURITY NOTE: Check event.origin in production!
+        if (event.data === 'simulateCrashRequest') {
+        console.log('PARENT: Received "simulateCrashRequest" message from iframe.');
+        showCrashSimulation();
+        }
+    });
 </script>
 
 </body>
