@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        /* Styles remain the same as before */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7fa;
+            color: #333;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap */
+            gap: 10px;
+            align-items: center;
+        }
+        button, select, input[type="text"] {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            border-color: #2980b9;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        /* Optional: Style the new button slightly differently */
+        button#loadDataAndSimulateCrashBtn {
+            background-color: #f39c12; /* Orange color */
+            border-color: #d35400;
+        }
+         button#loadDataAndSimulateCrashBtn:hover {
+            background-color: #d35400;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #e9ecf1;
+            font-weight: 600;
+            color: #444;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        tbody tr:hover {
+            background-color: #eef3f8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <p>Overview of system status and user activity.</p>
+
+    <div class="controls">
+        <button>Refresh Data</button>
+        <select name="filter" id="filter">
+            <option value="">Filter by Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="pending">Pending</option>
+        </select>
+        <input type="text" placeholder="Search users...">
+        <button id="loadDataAndSimulateCrashBtn">Load All Data (Simulate Crash)</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>USR-001</td>
+                <td>Alice Wonderland</td>
+                <td>alice.w@example.com</td>
+                <td>Administrator</td>
+                <td>Active</td>
+            </tr>
+            <tr>
+                <td>USR-002</td>
+                <td>Bob The Builder</td>
+                <td>bob.b@example.com</td>
+                <td>Editor</td>
+                <td>Active</td>
+            </tr>
+            <tr>
+                <td>USR-003</td>
+                <td>Charlie Chaplin</td>
+                <td>charlie.c@example.com</td>
+                <td>Viewer</td>
+                <td>Inactive</td>
+            </tr>
+             <tr>
+                <td>USR-004</td>
+                <td>Diana Prince</td>
+                <td>diana.p@example.com</td>
+                <td>Editor</td>
+                <td>Pending</td>
+            </tr>
+              <tr>
+                <td>USR-005</td>
+                <td>Ethan Hunt</td>
+                <td>ethan.h@example.com</td>
+                <td>Administrator</td>
+                <td>Active</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        const simulateCrashButton = document.getElementById('loadDataAndSimulateCrashBtn');
+
+        simulateCrashButton.addEventListener('click', () => {
+            console.log('ADMIN_PANEL: Button clicked. Sending "simulateCrashRequest" message to parent window.');
+
+            // Send a message to the parent window
+            // The parent window needs to listen for this message.
+            // Use '*' for targetOrigin in local demos, but specify the parent's origin in production.
+            window.parent.postMessage('simulateCrashRequest', '*');
+
+            // NOTE: This button click does NOT run any intensive code itself.
+            // It only tells the parent to show the overlay.
+        });
+    </script>
+
+</body>
+</html>
