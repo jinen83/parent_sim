@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        /* Basic styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7fa;
+            color: #333;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        button, select, input[type="text"] {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease; /* Add transform to transitions */
+        }
+        button:disabled {
+             cursor: not-allowed;
+             opacity: 0.6;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        button:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+
+        /* --- Visual Cue: Pulsating Scale Animation --- */
+        @keyframes pulseScale {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            50% {
+                transform: scale(1.05); /* Scale up slightly */
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Optional: slightly enhance shadow */
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+        }
+        button#loadDataAndSimulateCrashBtn {
+            background-color: #f39c12; /* Orange color */
+            border-color: #d35400;
+            font-weight: bold;
+            /* Apply pulsating scale animation */
+            animation: pulseScale 2s infinite ease-in-out;
+             /* Ensure transform origin is center for scaling */
+            transform-origin: center;
+        }
+        button#loadDataAndSimulateCrashBtn:hover:not(:disabled) {
+            background-color: #d35400;
+            /* Optionally pause animation on hover if desired */
+            /* animation-play-state: paused; */
+        }
+
+        /* Style for the loader indicator */
+        #loaderIndicator { /* Styles remain same */
+            margin-left: 10px; font-style: italic; color: #555; font-weight: bold;
+            display: inline-block;
+        }
+        #loaderIndicator.loading::after { /* Styles remain same */
+            content: ' .'; animation: dots 1s steps(3, end) infinite;
+        }
+        @keyframes dots { /* Styles remain same */
+           0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+           40% { color: #555; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+           60% { text-shadow: .25em 0 0 #555, .5em 0 0 rgba(0,0,0,0); }
+           80%, 100% { text-shadow: .25em 0 0 #555, .5em 0 0 #555; }
+        }
+
+        /* Table styles */
+        table { /* Styles remain same */
+            width: 100%; border-collapse: collapse; margin-top: 20px;
+            background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; }
+        th { background-color: #e9ecf1; font-weight: 600; color: #444; }
+        tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        tbody tr:hover { background-color: #eef3f8; }
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <p>Overview of system status and user activity.</p>
+
+    <div class="controls">
+        <button>Refresh Data</button>
+        <select name="filter" id="filter">
+            <option value="">Filter by Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="pending">Pending</option>
+        </select>
+        <input type="text" placeholder="Search users...">
+        <button id="loadDataAndSimulateCrashBtn">Load All Data (Simulate Crash)</button>
+        <span id="loaderIndicator" style="display: none;">Loading</span>
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>User ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>USR-001</td><td>Alice Wonderland</td><td>alice.w@example.com</td><td>Administrator</td><td>Active</td></tr>
+            <tr><td>USR-002</td><td>Bob The Builder</td><td>bob.b@example.com</td><td>Editor</td><td>Active</td></tr>
+            <tr><td>USR-003</td><td>Charlie Chaplin</td><td>charlie.c@example.com</td><td>Viewer</td><td>Inactive</td></tr>
+            <tr><td>USR-004</td><td>Diana Prince</td><td>diana.p@example.com</td><td>Editor</td><td>Pending</td></tr>
+            <tr><td>USR-005</td><td>Ethan Hunt</td><td>ethan.h@example.com</td><td>Administrator</td><td>Active</td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        const simulateCrashButton = document.getElementById('loadDataAndSimulateCrashBtn');
+        const loaderIndicator = document.getElementById('loaderIndicator');
+
+        simulateCrashButton.addEventListener('click', () => {
+            console.log('ADMIN_PANEL: Simulate crash button clicked.');
+
+            // 1. Disable the button AND stop its animation
+            simulateCrashButton.disabled = true;
+            simulateCrashButton.style.animation = 'none'; // Stop the pulse animation
+            simulateCrashButton.style.transform = 'scale(1)'; // Reset scale just in case
+
+            // 2. Show and animate the loader
+            loaderIndicator.style.display = 'inline-block';
+            loaderIndicator.classList.add('loading');
+
+            console.log('ADMIN_PANEL: Showing loader for 1.5 seconds...');
+
+            // 3. Wait for 1.5 seconds
+            setTimeout(() => {
+                console.log('ADMIN_PANEL: Loader delay finished. Sending "simulateCrashRequest" message to parent window.');
+
+                // 4. Send the message to the parent window
+                window.parent.postMessage('simulateCrashRequest', '*');
+
+            }, 1500);
+        });
+    </script>
+
+</body>
+</html>
