@@ -3,216 +3,211 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Iframe Crash Simulation (Two Column)</title>
+<title>Iframe Crash Simulation (AI Chat - Single Bubble)</title>
 <style>
-    body {
-        font-family: sans-serif;
-        padding: 15px;
-        background-color: #f0f0f0;
-        margin: 0;
-        color: #333;
-    }
-
-    /* Main container for two columns */
-    .main-container {
-        display: flex;
-        flex-wrap: wrap; /* Allow columns to stack when space is insufficient */
-        gap: 25px; /* Space between columns */
-        max-width: 1300px; /* Max overall width */
-        margin: 0 auto; /* Center the container */
-        align-items: flex-start;
-    }
-
-    /* Styling for columns */
-    .column {
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        flex-shrink: 1; /* Allow columns to shrink */
-        flex-basis: 0; /* Let grow factor primarily determine size */
-        box-sizing: border-box; /* INCLUDE padding/border in width calculation */
-        min-width: 280px; /* Minimum width before wrapping - ADJUST AS NEEDED */
-    }
-
-    .column-1 {
-        flex-grow: 2; /* Make col 1 take ~2/3 of available space */
-        /* Contains the browser window and its controls */
-        /* min-width can be specifically set here if different from col-2 */
-         min-width: 320px; /* Example: ensure browser window has enough min space */
-    }
-
-    .column-2 {
-        flex-grow: 1; /* Make col 2 take ~1/3 of available space */
-         /* min-width: 280px; /* Inherited from .column */
-        display: none; /* Initially hidden */
-    }
-
-    /* --- Column 1 Content --- */
-    .browser-window {
-        position: relative;
-        width: 100%; /* Fill column width */
-        height: 500px;
-        border: 1px solid #aaa;
-        background-color: #fff;
-        margin: 0 0 15px 0;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    .title-bar { /* Styles remain the same */
-        background-color: #ddd; height: 30px; display: flex; align-items: center;
-        padding: 0 10px; border-bottom: 1px solid #ccc; flex-shrink: 0;
-    }
+    /* --- Base & Column 1 Styles --- */
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 15px; background-color: #f4f7fa; margin: 0; color: #333; line-height: 1.5; }
+    .main-container { display: flex; flex-wrap: wrap; gap: 25px; max-width: 1300px; margin: 0 auto; align-items: stretch; }
+    .column { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); flex-shrink: 1; flex-basis: 0; box-sizing: border-box; min-width: 270px; display: flex; flex-direction: column; }
+    .column-1 { flex-grow: 1.8; min-width: 310px; }
+    .column-2 { flex-grow: 1; display: none; padding: 0; overflow: hidden; background-color: #f9f9f9; }
+    .browser-window { position: relative; width: 100%; height: auto; min-height: 400px; max-height: 75vh; aspect-ratio: 16 / 11; border: 1px solid #ccc; background-color: #fff; margin: 0 0 15px 0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; flex-grow: 1; }
+    .title-bar { background-color: #e8e8e8; height: 30px; display: flex; align-items: center; padding: 0 10px; border-bottom: 1px solid #ddd; flex-shrink: 0; }
     .buttons { display: flex; gap: 6px; margin-right: 10px; }
     .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
     .red { background-color: #ff5f57; } .yellow { background-color: #ffbd2e; } .green { background-color: #28c940; }
-    .tab-title { /* Styles remain the same */
-        font-size: 0.8em; color: #333; background-color: #eee; padding: 4px 10px;
-        border-radius: 4px 4px 0 0; position: relative; top: 1px; white-space: nowrap;
-        overflow: hidden; text-overflow: ellipsis;
-    }
-    #targetIframe { /* Styles remain the same */
-        width: 100%; height: calc(100% - 30px); border: none; display: block;
-    }
-    #crashOverlay { /* Styles remain mostly the same */
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(50, 50, 50, 0.9); color: #eee;
-        justify-content: center; align-items: center; text-align: center;
-        font-size: 1.5em; display: flex; flex-direction: column;
-        visibility: hidden; opacity: 0;
-        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-        z-index: 10; border-radius: 8px; padding: 20px; box-sizing: border-box;
-    }
+    .tab-title { font-size: 0.8em; color: #333; background-color: #eee; padding: 4px 10px; border-radius: 4px 4px 0 0; position: relative; top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #targetIframe { width: 100%; flex-grow: 1; border: none; display: block; }
+    #crashOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(40, 40, 40, 0.92); color: #f1f1f1; justify-content: center; align-items: center; text-align: center; font-size: 1.4em; display: flex; flex-direction: column; visibility: hidden; opacity: 0; transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; z-index: 10; border-radius: 8px; padding: 25px; box-sizing: border-box; }
     #crashOverlay.visible { visibility: visible; opacity: 1; }
-    .sad-icon { font-size: 3em; margin-bottom: 15px; color: #ffcc00; }
-    .murphy-in-overlay { /* Styles remain the same */
-        font-size: 0.6em; margin-top: 20px; font-style: italic; color: #ccc;
-    }
+    .sad-icon { font-size: 2.8em; margin-bottom: 15px; color: #ffdd57; }
+    .murphy-in-overlay { font-size: 0.6em; margin-top: auto; padding-top: 15px; font-style: italic; color: #aaa; width: 100%; text-align: center; }
+    .col1-controls { text-align: center; flex-shrink: 0; padding-top: 10px; }
+    .col1-controls button { padding: 10px 15px; font-size: 1em; cursor: pointer; margin: 5px; }
 
-    .col1-controls { /* Styles remain the same */
-        text-align: center;
-    }
-    .col1-controls button { /* Styles remain the same */
-        padding: 10px 15px; font-size: 1em; cursor: pointer; margin: 5px;
-    }
+    /* --- Column 2 Styles --- */
+    #crashReasonsCol { /* Base style for column */ }
+    .column-header { margin: 0 0 15px 0; padding: 12px 20px; background-color: #e9ecef; border-bottom: 1px solid #dee2e6; font-size: 1.15em; font-weight: 600; color: #495057; text-align: center; flex-shrink: 0; }
+    .chat-container { height: auto; max-height: 430px; overflow-y: auto; display: flex; flex-direction: column; box-sizing: border-box; flex-grow: 1; padding: 0 10px 10px 10px; }
+    .chat-message { padding: 12px 18px; border-radius: 18px; margin-bottom: 10px; max-width: 88%; line-height: 1.45; font-size: 0.92em; opacity: 0; transform: translateY(10px); animation: fadeIn 0.5s ease forwards; }
+    @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+    .user-message { background-color: #4dabf7; color: white; border-bottom-right-radius: 5px; align-self: flex-end; }
+    .ai-message { background-color: #f1f3f5; color: #212529; border-bottom-left-radius: 5px; align-self: flex-start; min-height: 45px; box-sizing: border-box; }
+    .ai-message.thinking-state { display: flex; align-items: center; font-style: italic; color: #555; }
+    .spinner { width: 15px; height: 15px; border: 2px solid rgba(0, 0, 0, 0.1); border-left-color: #555; border-radius: 50%; display: inline-block; margin-right: 8px; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ai-name { font-weight: bold; display: block; margin-bottom: 5px; color: #1971c2; }
+    #aiTypedText { white-space: pre-wrap; overflow-wrap: break-word; }
+    #aiTypedText::after { content: '|'; display: inline-block; animation: blink 0.7s infinite step-start; font-weight: bold; margin-left: 2px; opacity: 1; }
+    #aiTypedText.typing-done::after { content: ''; animation: none; opacity: 0; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .tag { font-size: 0.7em; padding: 2px 6px; border-radius: 10px; margin-left: 5px; font-weight: bold; white-space: nowrap; display: inline-block; vertical-align: middle; }
+    .dev-tag { background-color: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+    .other-tag { background-color: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
 
-    /* --- Column 2 Content --- */
-    #crashReasonsCol h2 { /* Styles remain the same */
-        margin-top: 0; color: #c0392b; border-bottom: 1px solid #eee; padding-bottom: 10px;
-    }
-    #crashReasonsCol ul { /* Styles remain the same */
-        list-style: none; padding: 0; margin: 0;
-    }
-    #crashReasonsCol li { /* Styles remain the same */
-        background-color: #f9f9f9; border: 1px solid #eee; padding: 10px;
-        margin-bottom: 8px; border-radius: 4px; font-size: 0.9em;
-    }
-    #crashReasonsCol li strong { color: #555; }
-
-    /* Responsive adjustments */
-    /* Stacking occurs when container width < sum of min-widths + gap */
-    /* Example: 320 (col1 min) + 280 (col2 min) + 25 (gap) = 625px */
-    @media (max-width: 625px) {
-        /* No specific flex rules needed here, flex-wrap: wrap handles stacking */
-        .browser-window {
-            height: 450px; /* Adjust height for stacked view */
-        }
-    }
-    @media (max-width: 400px) {
-        .browser-window {
-            height: 400px;
-        }
-         #crashOverlay { font-size: 1.2em; }
-        .col1-controls button { font-size: 0.9em; }
-    }
-    /* --- END OF UPDATED CSS RULES --- */
-
+    /* --- Responsive Adjustments --- */
+    @media (max-width: 605px) { .main-container { gap: 15px; } .column { min-width: 100%; flex-basis: 100%; } .browser-window { min-height: 350px; aspect-ratio: 4 / 3; } .chat-container { height: auto; max-height: 300px; } }
+    @media (max-width: 400px) { body { padding: 10px; } #crashOverlay { font-size: 1.1em; } .col1-controls button { font-size: 0.9em; } .chat-message { font-size: 0.88em; } }
 </style>
 </head>
 <body>
 
 <div class="main-container">
-
     <div class="column column-1">
-        <div class="browser-window">
-            <div class="title-bar">
-                <div class="buttons">
-                    <span class="dot red"></span>
-                    <span class="dot yellow"></span>
-                    <span class="dot green"></span>
-                </div>
-                <span class="tab-title">Admin Dashboard</span>
-            </div>
-            <iframe id="targetIframe" src="admin_panel1.html" title="Admin Dashboard Content"></iframe>
-
-            <div id="crashOverlay">
-                <div class="sad-icon">:(</div>
-                <div>The 'Admin Dashboard' tab has crashed.</div>
-                <div style="font-size: 0.7em; margin-top: 10px;">(This is a simulation)</div>
-                <div class="murphy-in-overlay">Murphy's Law: If anything can go wrong, it will.</div>
-            </div>
-        </div>
-
-        <div class="col1-controls">
-            <button id="simulateCrashBtnParent" hidden>Simulate Crash (Parent Button)</button>
-            <button id="resetBtn">Reset Iframe</button>
-        </div>
+       <div class="browser-window">
+           <div class="title-bar">
+               <div class="buttons"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+               <span class="tab-title">Admin Dashboard</span>
+           </div>
+           <iframe id="targetIframe" src="admin_panel.html" title="Admin Dashboard Content"></iframe>
+           <div id="crashOverlay">
+               <div class="sad-icon">:(</div>
+               <div>The 'Admin Dashboard' tab has crashed.</div>
+               <div style="font-size: 0.7em; margin-top: 10px;">(This is a simulation)</div>
+               <div class="murphy-in-overlay">Murphy's Law: If anything can go wrong, it will.</div>
+           </div>
+       </div>
+       <div class="col1-controls">
+           <button id="simulateCrashBtnParent" hidden>Simulate Crash (Parent Button)</button>
+           <button id="resetBtn">Reset Iframe</button>
+       </div>
     </div>
-
     <div class="column column-2" id="crashReasonsCol">
-        <h2>Possible Crash Reasons</h2>
-        <ul>
-            <li><strong>Script Timeout:</strong> An operation took too long (e.g., infinite loop).</li>
-            <li><strong>Memory Exhaustion:</strong> The page used too much memory allocation.</li>
-            <li><strong>Rendering Issue:</strong> Complex CSS or canvas operations failed.</li>
-            <li><strong>Network Error:</strong> Failed to load critical resources.</li>
-            <li><strong>Browser Bug:</strong> An underlying issue in the browser itself.</li>
-            <li><strong>Resource Limit:</strong> Exceeded limits set by the browser or OS.</li>
-        </ul>
-        <p style="font-size: 0.8em; margin-top: 15px; color: #777;">(These are common examples, the actual cause may vary)</p>
+        <h3 class="column-header">DronaHQ AI</h3>
+        <div class="chat-container">
+            <div class="chat-message user-message" id="userPromptMsg" style="visibility: hidden;">
+                What are the potential reasons for this crash?
+            </div>
+            <div class="chat-message ai-message" id="aiResponseContainer" style="visibility: hidden;">
+                </div>
+        </div>
     </div>
-
 </div>
 
-
 <script>
-  const overlay = document.getElementById('crashOverlay');
-  const simulateBtnParent = document.getElementById('simulateCrashBtnParent');
-  const resetBtn = document.getElementById('resetBtn');
-  const iframe = document.getElementById('targetIframe');
-  const crashReasonsCol = document.getElementById('crashReasonsCol'); // Get Column 2 element
+    const overlay = document.getElementById('crashOverlay');
+    const simulateBtnParent = document.getElementById('simulateCrashBtnParent');
+    const resetBtn = document.getElementById('resetBtn');
+    const iframe = document.getElementById('targetIframe');
+    const crashReasonsCol = document.getElementById('crashReasonsCol');
+    const chatContainer = crashReasonsCol.querySelector('.chat-container');
+    const userPromptMsg = document.getElementById('userPromptMsg');
+    const aiResponseContainer = document.getElementById('aiResponseContainer'); // The single AI bubble
+    let typingIntervalId = null;
+    let chatTimeoutId1 = null;
+    let chatTimeoutId2 = null;
+    let chatTimeoutId3 = null;
+    let chatTimeoutId4 = null;
 
-  // Function to show the overlay AND Crash Reasons column
-  function showCrashSimulation() {
-      overlay.classList.add('visible');
-      crashReasonsCol.style.display = 'block'; // Show Column 2
-      console.log('PARENT: Crash simulation activated.');
-  }
+    const crashReasonsText = `Okay, analyzing potential causes for the simulated crash...\n\n**Developer Related Issues:**\n* Infinite loop in a component (e.g., table grid). [Dev]\n* Memory exhaustion (e.g., no data pagination). [Dev]\n* Complex rendering (CSS/JS/Canvas). [Dev]\n* Unhandled application code errors. [Dev]\n\n**Other Potential Causes:**\n* Browser-specific bug/incompatibility. [Other]\n* Network errors disrupting resources. [Other]\n* System resource limits exceeded. [Other]\n* Interfering browser extensions. [Other]\n\n*Note: Simulations highlight potential pitfalls. Robust testing is key!*`;
 
-  // Function to hide the overlay AND Crash Reasons column, and reset iframe
-  function resetSimulation() {
-      overlay.classList.remove('visible');
-      crashReasonsCol.style.display = 'none'; // Hide Column 2
-      // Force iframe reload to truly reset its state
-      iframe.src = iframe.src; // Reloads admin_panel.html
-      console.log('PARENT: Simulation reset and iframe reloaded.');
-  }
-
-  // Listener for the PARENT's simulate button
-  simulateBtnParent.addEventListener('click', showCrashSimulation);
-
-  // Listener for the reset button
-  resetBtn.addEventListener('click', resetSimulation);
-
-  // Listener for messages from the iframe (to trigger the crash simulation)
-  window.addEventListener('message', (event) => {
-    // SECURITY NOTE: Check event.origin in production!
-    if (event.data === 'simulateCrashRequest') {
-      console.log('PARENT: Received "simulateCrashRequest" message from iframe.');
-      showCrashSimulation(); // Activate the simulation
+    function applyTagsToResponse() {
+        const typedTextElement = aiResponseContainer.querySelector('#aiTypedText');
+        if (!typedTextElement) return;
+        let currentHTML = typedTextElement.innerHTML;
+        currentHTML = currentHTML.replace(/\[Dev\]/g, '<span class="tag dev-tag">Dev</span>');
+        currentHTML = currentHTML.replace(/\[Other\]/g, '<span class="tag other-tag">Other</span>');
+        typedTextElement.innerHTML = currentHTML;
+        console.log("Applied tags to response.");
     }
-  });
+
+    function typeOutReasons(text, element, callback) {
+         let i = 0;
+         if (typingIntervalId) clearInterval(typingIntervalId);
+         element.innerHTML = '';
+         element.classList.remove('typing-done');
+         typingIntervalId = setInterval(() => {
+            if (i < text.length) {
+                if (text.charAt(i) === '\n') { element.innerHTML += '<br>'; }
+                else { element.innerHTML += text.charAt(i); }
+                i++;
+                if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+            } else {
+                clearInterval(typingIntervalId);
+                typingIntervalId = null;
+                element.classList.add('typing-done');
+                if (callback) callback();
+                console.log("Typing finished.");
+            }
+         }, 35);
+    }
+
+    // --- Chat Sequence (Uses Single AI Bubble) ---
+    function startAiReasoningSequence() {
+        console.log("Starting AI reasoning sequence...");
+        resetChatUI();
+        crashReasonsCol.style.display = 'flex'; // Show column 2 (as flex container)
+        chatTimeoutId1 = setTimeout(() => {
+            userPromptMsg.style.visibility = 'visible';
+            if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+            console.log("Showing user prompt");
+            chatTimeoutId2 = setTimeout(() => {
+                // Show Thinking state in the single AI bubble
+                aiResponseContainer.innerHTML = '<span class="spinner"></span> Thinking...';
+                aiResponseContainer.classList.add('thinking-state');
+                aiResponseContainer.style.visibility = 'visible'; // Make bubble visible
+                if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                console.log("Showing thinking 1");
+                chatTimeoutId3 = setTimeout(() => {
+                    // Update content to Reasoning state in SAME bubble
+                    aiResponseContainer.innerHTML = '<span class="spinner"></span> Reasoning potential causes...';
+                    if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                    console.log("Showing thinking 2");
+                    chatTimeoutId4 = setTimeout(() => {
+                         // Update content to final Response structure in SAME bubble
+                         aiResponseContainer.classList.remove('thinking-state');
+                         aiResponseContainer.innerHTML = '<strong class="ai-name">DronaHQ AI:</strong><div id="aiTypedText"></div>';
+                         const aiTypedTextElement = aiResponseContainer.querySelector('#aiTypedText');
+                         if (aiTypedTextElement) {
+                             if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                             console.log("Starting typing...");
+                             typeOutReasons(crashReasonsText, aiTypedTextElement, applyTagsToResponse);
+                         } else { console.error("Could not find #aiTypedText element."); }
+                    }, 1800);
+                }, 1500);
+            }, 1000);
+        }, 300);
+    }
+
+     // --- Reset Chat UI State (Uses Single AI Bubble) ---
+    function resetChatUI() {
+         console.log("Resetting chat UI.");
+         clearTimeout(chatTimeoutId1); clearTimeout(chatTimeoutId2);
+         clearTimeout(chatTimeoutId3); clearTimeout(chatTimeoutId4);
+         if (typingIntervalId) clearInterval(typingIntervalId);
+         typingIntervalId = null;
+         if(userPromptMsg) userPromptMsg.style.visibility = 'hidden';
+         if(aiResponseContainer) { // Target single container
+             aiResponseContainer.style.visibility = 'hidden';
+             aiResponseContainer.innerHTML = '';
+             aiResponseContainer.classList.remove('thinking-state');
+             const typedTextElement = aiResponseContainer.querySelector('#aiTypedText');
+             if (typedTextElement) { typedTextElement.classList.remove('typing-done'); }
+         }
+         if(chatContainer) chatContainer.scrollTop = 0;
+    }
+
+    // --- Main Simulation Control & Event Listeners ---
+    function showCrashSimulation() {
+         overlay.classList.add('visible');
+         startAiReasoningSequence();
+         console.log('PARENT: Crash simulation initiated.');
+    }
+    function resetSimulation() {
+         overlay.classList.remove('visible');
+         crashReasonsCol.style.display = 'none';
+         resetChatUI();
+         iframe.src = iframe.src;
+         console.log('PARENT: Simulation reset and iframe reloaded.');
+    }
+    simulateBtnParent.addEventListener('click', showCrashSimulation);
+    resetBtn.addEventListener('click', resetSimulation);
+    window.addEventListener('message', (event) => {
+         if (event.data === 'simulateCrashRequest') {
+             console.log('PARENT: Received "simulateCrashRequest" message from iframe.');
+             showCrashSimulation();
+         }
+    });
 </script>
 
 </body>
