@@ -5,34 +5,163 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Iframe Crash Simulation (AI Chat - Single Bubble)</title>
 <style>
-    /* --- Base & Column 1 Styles --- */
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 15px; background-color: #f4f7fa; margin: 0; color: #333; line-height: 1.5; }
-    .main-container { display: flex; flex-wrap: wrap; gap: 25px; max-width: 1300px; margin: 0 auto; align-items: stretch; }
-    .column { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); flex-shrink: 1; flex-basis: 0; box-sizing: border-box; min-width: 270px; display: flex; flex-direction: column; }
-    .column-1 { flex-grow: 1.8; min-width: 310px; }
-    .column-2 { flex-grow: 1; display: none; padding: 0; overflow: hidden; background-color: #f9f9f9; }
-    .browser-window { position: relative; width: 100%; height: auto; min-height: 400px; max-height: 75vh; aspect-ratio: 16 / 11; border: 1px solid #ccc; background-color: #fff; margin: 0 0 15px 0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; flex-grow: 1; }
-    .title-bar { background-color: #e8e8e8; height: 30px; display: flex; align-items: center; padding: 0 10px; border-bottom: 1px solid #ddd; flex-shrink: 0; }
+    /* --- Base Styles --- */
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* Common system font stack */
+        padding: 15px;
+        background-color: #f4f7fa; /* Lighter, softer background */
+        margin: 0;
+        color: #333;
+        line-height: 1.5; /* Improve readability */
+    }
+
+    /* Main container for two columns */
+    .main-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 25px;
+        max-width: 1300px;
+        margin: 0 auto;
+        align-items: stretch; /* Stretch columns to equal height */
+    }
+
+    /* Styling for columns */
+    .column {
+        background-color: #fff;
+        padding: 20px; /* Padding applied here */
+        border-radius: 10px; /* Slightly larger radius */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Softer shadow */
+        flex-shrink: 1;
+        flex-basis: 0;
+        box-sizing: border-box;
+        min-width: 270px; /* Base minimum width */
+        display: flex; /* Use flex for internal layout (header + chat) */
+        flex-direction: column;
+    }
+
+    .column-1 {
+        flex-grow: 1.8; /* Adjusted grow ratio slightly */
+        min-width: 310px; /* Adjusted min-width */
+        /* display: flex; flex-direction: column; /* Already on .column */
+    }
+
+    .column-2 {
+        flex-grow: 1;
+        display: none; /* Initially hidden */
+        /* padding: 0; /* Padding is now on .column */
+        overflow: hidden;
+        background-color: #f9f9f9;
+    }
+
+    /* --- Column 1 Styles --- */
+    .browser-window {
+        position: relative;
+        width: 100%;
+        height: auto; /* Let content determine height */
+        min-height: 400px; /* Ensure minimum space */
+        max-height: 75vh; /* Limit height relative to viewport */
+        aspect-ratio: 16 / 11; /* Maintain shape, adjust ratio as needed */
+        border: 1px solid #ccc; /* Lighter border */
+        background-color: #fff;
+        margin: 0 0 15px 0; /* Only bottom margin */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Reduced shadow */
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex; /* Use flex for title bar + iframe */
+        flex-direction: column;
+        flex-grow: 1; /* Allow browser window to take space in col 1 flex */
+    }
+    .title-bar {
+        background-color: #e8e8e8; /* Lighter title bar */
+        height: 30px; display: flex; align-items: center;
+        padding: 0 10px; border-bottom: 1px solid #ddd; flex-shrink: 0;
+    }
     .buttons { display: flex; gap: 6px; margin-right: 10px; }
     .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
     .red { background-color: #ff5f57; } .yellow { background-color: #ffbd2e; } .green { background-color: #28c940; }
-    .tab-title { font-size: 0.8em; color: #333; background-color: #eee; padding: 4px 10px; border-radius: 4px 4px 0 0; position: relative; top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #targetIframe { width: 100%; flex-grow: 1; border: none; display: block; }
-    #crashOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(40, 40, 40, 0.92); color: #f1f1f1; justify-content: center; align-items: center; text-align: center; font-size: 1.4em; display: flex; flex-direction: column; visibility: hidden; opacity: 0; transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; z-index: 10; border-radius: 8px; padding: 25px; box-sizing: border-box; }
+    .tab-title {
+        font-size: 0.8em; color: #333; background-color: #eee; padding: 4px 10px;
+        border-radius: 4px 4px 0 0; position: relative; top: 1px; white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis;
+    }
+    #targetIframe {
+        width: 100%;
+        flex-grow: 1; /* Allow iframe to fill remaining vertical space */
+        border: none; display: block;
+    }
+    #crashOverlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(40, 40, 40, 0.92); /* Slightly different overlay color */
+        color: #f1f1f1; /* Brighter text */
+        justify-content: center; align-items: center; text-align: center;
+        font-size: 1.4em; /* Adjust size */
+        display: flex; flex-direction: column;
+        visibility: hidden; opacity: 0;
+        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        z-index: 10; border-radius: 8px;
+        padding: 25px; box-sizing: border-box;
+    }
     #crashOverlay.visible { visibility: visible; opacity: 1; }
-    .sad-icon { font-size: 2.8em; margin-bottom: 15px; color: #ffdd57; }
-    .murphy-in-overlay { font-size: 0.6em; margin-top: auto; padding-top: 15px; font-style: italic; color: #aaa; width: 100%; text-align: center; }
-    .col1-controls { text-align: center; flex-shrink: 0; padding-top: 10px; }
-    .col1-controls button { padding: 10px 15px; font-size: 1em; cursor: pointer; margin: 5px; }
+    .sad-icon { font-size: 2.8em; margin-bottom: 15px; color: #ffdd57; } /* Different yellow */
+    .murphy-in-overlay {
+        font-size: 0.6em;
+        margin-top: auto; /* Push to bottom */
+        padding-top: 15px; /* Space above it */
+        font-style: italic;
+        color: #aaa; /* Lighter grey */
+        width: 100%; /* Ensure it spans width */
+        text-align: center; /* Confirm centering */
+    }
+    .col1-controls {
+        text-align: center;
+        flex-shrink: 0; /* Prevent controls shrinking */
+        padding-top: 10px;
+    }
+    .col1-controls button {
+        padding: 10px 15px; font-size: 1em; cursor: pointer; margin: 5px;
+    }
 
     /* --- Column 2 Styles --- */
-    #crashReasonsCol { /* Base style for column */ }
-    .column-header { margin: 0 0 15px 0; padding: 12px 20px; background-color: #e9ecef; border-bottom: 1px solid #dee2e6; font-size: 1.15em; font-weight: 600; color: #495057; text-align: center; flex-shrink: 0; }
-    .chat-container { height: auto; max-height: 430px; overflow-y: auto; display: flex; flex-direction: column; box-sizing: border-box; flex-grow: 1; padding: 0 10px 10px 10px; }
-    .chat-message { padding: 12px 18px; border-radius: 18px; margin-bottom: 10px; max-width: 88%; line-height: 1.45; font-size: 0.92em; opacity: 0; transform: translateY(10px); animation: fadeIn 0.5s ease forwards; }
+    #crashReasonsCol { /* Base styles inherited from .column */ }
+
+    .column-header {
+        text-align: center;
+        font-size: 1.15em; /* Slightly larger */
+        font-weight: 600;
+        color: #343a40; /* Darker header text */
+        padding-bottom: 10px;
+        margin-bottom: 15px; /* Space below header */
+        border-bottom: 2px solid #dee2e6; /* Stronger border */
+        flex-shrink: 0; /* Prevent header shrinking */
+    }
+
+    .chat-container {
+        /* Padding removed as it's on .column */
+        height: auto; /* Let flex-grow determine height */
+        /* max-height: 430px; /* REMOVED THIS LINE */
+        overflow-y: auto; /* Enable scroll ONLY if content exceeds available height */
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        flex-grow: 1; /* Allow chat container to take remaining vertical space */
+        /* Optional: Add slight internal padding if needed */
+        padding: 0 5px 5px 5px;
+    }
+    .chat-message {
+        padding: 12px 18px; border-radius: 18px;
+        margin-bottom: 10px; /* Reduced margin */
+        max-width: 88%; line-height: 1.45; font-size: 0.92em;
+        opacity: 0; transform: translateY(10px);
+        animation: fadeIn 0.5s ease forwards;
+    }
     @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
-    .user-message { background-color: #4dabf7; color: white; border-bottom-right-radius: 5px; align-self: flex-end; }
-    .ai-message { background-color: #f1f3f5; color: #212529; border-bottom-left-radius: 5px; align-self: flex-start; min-height: 45px; box-sizing: border-box; }
+
+    .user-message {
+        background-color: #4dabf7; color: white; border-bottom-right-radius: 5px; align-self: flex-end;
+    }
+    .ai-message {
+        background-color: #f1f3f5; color: #212529; border-bottom-left-radius: 5px; align-self: flex-start; min-height: 45px; box-sizing: border-box;
+    }
     .ai-message.thinking-state { display: flex; align-items: center; font-style: italic; color: #555; }
     .spinner { width: 15px; height: 15px; border: 2px solid rgba(0, 0, 0, 0.1); border-left-color: #555; border-radius: 50%; display: inline-block; margin-right: 8px; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -46,8 +175,22 @@
     .other-tag { background-color: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
 
     /* --- Responsive Adjustments --- */
-    @media (max-width: 605px) { .main-container { gap: 15px; } .column { min-width: 100%; flex-basis: 100%; } .browser-window { min-height: 350px; aspect-ratio: 4 / 3; } .chat-container { height: auto; max-height: 300px; } }
-    @media (max-width: 400px) { body { padding: 10px; } #crashOverlay { font-size: 1.1em; } .col1-controls button { font-size: 0.9em; } .chat-message { font-size: 0.88em; } }
+    /* Update breakpoint based on new min-widths + gap: 310 + 270 + 25 = 605px */
+    @media (max-width: 605px) {
+        .main-container { gap: 15px; }
+        .column { min-width: 100%; flex-basis: 100%; }
+        .browser-window { min-height: 350px; aspect-ratio: 4 / 3; }
+        .chat-container {
+            height: auto; /* Ensure height resets for smaller viewports */
+            max-height: 300px; /* Limit height on smaller screens */
+        }
+    }
+    @media (max-width: 400px) {
+        body { padding: 10px; }
+        #crashOverlay { font-size: 1.1em; }
+        .col1-controls button { font-size: 0.9em; }
+        .chat-message { font-size: 0.88em; }
+    }
 </style>
 </head>
 <body>
@@ -68,7 +211,7 @@
            </div>
        </div>
        <div class="col1-controls">
-           <button id="simulateCrashBtnParent" hidden>Simulate Crash (Parent Button)</button>
+           <button id="simulateCrashBtnParent">Simulate Crash (Parent Button)</button>
            <button id="resetBtn">Reset Iframe</button>
        </div>
     </div>
@@ -92,7 +235,7 @@
     const crashReasonsCol = document.getElementById('crashReasonsCol');
     const chatContainer = crashReasonsCol.querySelector('.chat-container');
     const userPromptMsg = document.getElementById('userPromptMsg');
-    const aiResponseContainer = document.getElementById('aiResponseContainer'); // The single AI bubble
+    const aiResponseContainer = document.getElementById('aiResponseContainer');
     let typingIntervalId = null;
     let chatTimeoutId1 = null;
     let chatTimeoutId2 = null;
@@ -101,27 +244,28 @@
 
     const crashReasonsText = `Okay, analyzing potential causes for the simulated crash...\n\n**Developer Related Issues:**\n* Infinite loop in a component (e.g., table grid). [Dev]\n* Memory exhaustion (e.g., no data pagination). [Dev]\n* Complex rendering (CSS/JS/Canvas). [Dev]\n* Unhandled application code errors. [Dev]\n\n**Other Potential Causes:**\n* Browser-specific bug/incompatibility. [Other]\n* Network errors disrupting resources. [Other]\n* System resource limits exceeded. [Other]\n* Interfering browser extensions. [Other]\n\n*Note: Simulations highlight potential pitfalls. Robust testing is key!*`;
 
-    function applyTagsToResponse() {
-        const typedTextElement = aiResponseContainer.querySelector('#aiTypedText');
-        if (!typedTextElement) return;
-        let currentHTML = typedTextElement.innerHTML;
-        currentHTML = currentHTML.replace(/\[Dev\]/g, '<span class="tag dev-tag">Dev</span>');
-        currentHTML = currentHTML.replace(/\[Other\]/g, '<span class="tag other-tag">Other</span>');
-        typedTextElement.innerHTML = currentHTML;
-        console.log("Applied tags to response.");
-    }
-
-    function typeOutReasons(text, element, callback) {
+    function applyTagsToResponse() { /* ... (same as before) ... */ }
+    function typeOutReasons(text, element, callback) { /* ... (same as before, scroll logic updated below) ... */
          let i = 0;
          if (typingIntervalId) clearInterval(typingIntervalId);
          element.innerHTML = '';
          element.classList.remove('typing-done');
+
          typingIntervalId = setInterval(() => {
             if (i < text.length) {
                 if (text.charAt(i) === '\n') { element.innerHTML += '<br>'; }
                 else { element.innerHTML += text.charAt(i); }
                 i++;
-                if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+
+                // --- UPDATED SCROLL LOGIC ---
+                // Use setTimeout to scroll after browser potentially recalculates height
+                if (chatContainer) {
+                    setTimeout(() => {
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }, 0);
+                }
+                // --- END UPDATED SCROLL LOGIC ---
+
             } else {
                 clearInterval(typingIntervalId);
                 typingIntervalId = null;
@@ -132,36 +276,45 @@
          }, 35);
     }
 
-    // --- Chat Sequence (Uses Single AI Bubble) ---
+    // Helper function to scroll chat to bottom reliably
+    function scrollChatBottom() {
+        if (chatContainer) {
+            setTimeout(() => {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 0); // Delay allows browser to render/calculate height
+        }
+    }
+
     function startAiReasoningSequence() {
         console.log("Starting AI reasoning sequence...");
         resetChatUI();
-        crashReasonsCol.style.display = 'flex'; // Show column 2 (as flex container)
+        crashReasonsCol.style.display = 'flex';
+
         chatTimeoutId1 = setTimeout(() => {
             userPromptMsg.style.visibility = 'visible';
-            if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+            scrollChatBottom(); // Scroll after showing
             console.log("Showing user prompt");
+
             chatTimeoutId2 = setTimeout(() => {
-                // Show Thinking state in the single AI bubble
                 aiResponseContainer.innerHTML = '<span class="spinner"></span> Thinking...';
                 aiResponseContainer.classList.add('thinking-state');
-                aiResponseContainer.style.visibility = 'visible'; // Make bubble visible
-                if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                aiResponseContainer.style.visibility = 'visible';
+                scrollChatBottom(); // Scroll after showing
                 console.log("Showing thinking 1");
+
                 chatTimeoutId3 = setTimeout(() => {
-                    // Update content to Reasoning state in SAME bubble
                     aiResponseContainer.innerHTML = '<span class="spinner"></span> Reasoning potential causes...';
-                    if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                    scrollChatBottom(); // Scroll after updating content
                     console.log("Showing thinking 2");
+
                     chatTimeoutId4 = setTimeout(() => {
-                         // Update content to final Response structure in SAME bubble
                          aiResponseContainer.classList.remove('thinking-state');
                          aiResponseContainer.innerHTML = '<strong class="ai-name">DronaHQ AI:</strong><div id="aiTypedText"></div>';
                          const aiTypedTextElement = aiResponseContainer.querySelector('#aiTypedText');
                          if (aiTypedTextElement) {
-                             if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                             scrollChatBottom(); // Scroll after setting up response structure
                              console.log("Starting typing...");
-                             typeOutReasons(crashReasonsText, aiTypedTextElement, applyTagsToResponse);
+                             typeOutReasons(crashReasonsText, aiTypedTextElement, applyTagsToResponse); // typeOutReasons handles its own scrolling internally now
                          } else { console.error("Could not find #aiTypedText element."); }
                     }, 1800);
                 }, 1500);
@@ -169,15 +322,34 @@
         }, 300);
     }
 
-     // --- Reset Chat UI State (Uses Single AI Bubble) ---
-    function resetChatUI() {
+     function resetChatUI() { /* ... (same as before) ... */ }
+     function showCrashSimulation() { /* ... (same as before) ... */ }
+     function resetSimulation() { /* ... (same as before) ... */ }
+
+    // --- Event Listeners (Unchanged) ---
+    simulateBtnParent.addEventListener('click', showCrashSimulation);
+    resetBtn.addEventListener('click', resetSimulation);
+    window.addEventListener('message', (event) => { /* ... (same as before) ... */ });
+
+     // --- Need to make sure the functions referenced in listeners are defined ---
+     function applyTagsToResponse() {
+        const typedTextElement = aiResponseContainer.querySelector('#aiTypedText');
+        if (!typedTextElement) return;
+        let currentHTML = typedTextElement.innerHTML;
+        currentHTML = currentHTML.replace(/\[Dev\]/g, '<span class="tag dev-tag">Dev</span>');
+        currentHTML = currentHTML.replace(/\[Other\]/g, '<span class="tag other-tag">Other</span>');
+        typedTextElement.innerHTML = currentHTML;
+        console.log("Applied tags to response.");
+     }
+
+     function resetChatUI() {
          console.log("Resetting chat UI.");
          clearTimeout(chatTimeoutId1); clearTimeout(chatTimeoutId2);
          clearTimeout(chatTimeoutId3); clearTimeout(chatTimeoutId4);
          if (typingIntervalId) clearInterval(typingIntervalId);
          typingIntervalId = null;
          if(userPromptMsg) userPromptMsg.style.visibility = 'hidden';
-         if(aiResponseContainer) { // Target single container
+         if(aiResponseContainer) {
              aiResponseContainer.style.visibility = 'hidden';
              aiResponseContainer.innerHTML = '';
              aiResponseContainer.classList.remove('thinking-state');
@@ -185,30 +357,23 @@
              if (typedTextElement) { typedTextElement.classList.remove('typing-done'); }
          }
          if(chatContainer) chatContainer.scrollTop = 0;
-    }
+     }
 
-    // --- Main Simulation Control & Event Listeners ---
-    function showCrashSimulation() {
+     function showCrashSimulation() {
          overlay.classList.add('visible');
          startAiReasoningSequence();
          console.log('PARENT: Crash simulation initiated.');
-    }
-    function resetSimulation() {
+     }
+     function resetSimulation() {
          overlay.classList.remove('visible');
          crashReasonsCol.style.display = 'none';
          resetChatUI();
          iframe.src = iframe.src;
          console.log('PARENT: Simulation reset and iframe reloaded.');
-    }
-    simulateBtnParent.addEventListener('click', showCrashSimulation);
-    resetBtn.addEventListener('click', resetSimulation);
-    window.addEventListener('message', (event) => {
-         if (event.data === 'simulateCrashRequest') {
-             console.log('PARENT: Received "simulateCrashRequest" message from iframe.');
-             showCrashSimulation();
-         }
-    });
+     }
 </script>
+
+
 
 </body>
 </html>
