@@ -371,6 +371,12 @@
          iframe.src = iframe.src;
          console.log('PARENT: Simulation reset and iframe reloaded.');
      }
+     window.addEventListener('message', (event) => {
+        // SECURITY NOTE: Check event.origin in production!
+        if (event.data === 'simulateCrashRequest') {
+        console.log('PARENT: Received "simulateCrashRequest" message from iframe.');
+        showCrashSimulation();
+    
 </script>
 
 
